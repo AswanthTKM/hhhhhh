@@ -1,0 +1,1158 @@
+REPOIMPLS
+
+ADMIN REPOIMPL
+
+package com.FinalProject.RepoImpl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import com.FinalProject.Entity.Accounts;
+import com.FinalProject.Entity.Foodie;
+import com.FinalProject.Entity.Reviews;
+import com.FinalProject.Entity.Vendor;
+import com.FinalProject.Repo.AdminRepo;
+
+
+@Component
+public class AdminRepoImpl implements AdminRepo {
+	
+	@Autowired
+	JdbcTemplate jt;
+
+	@Override
+	public List<Foodie> showAllfoodie() {
+		String sql = "Select * from foodie;";
+		try {
+		List<Foodie> foodieAll = jt.query(sql, new BeanPropertyRowMapper(Foodie.class));
+		return foodieAll;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		return null;
+		}
+
+	@Override
+	public List<Vendor> showAllvendorreq() {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where reqstatus='pending';";
+		try {
+		List<Vendor> vendrqAll = jt.query(sql, new BeanPropertyRowMapper(Vendor.class));
+		return vendrqAll;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		return null;
+		
+	}
+
+	@Override
+	public String approveVendorById(String vendorid) {
+		// TODO Auto-generated method stub
+		Vendor vob=searchVendorById(vendorid);
+		try
+		{
+			if(vob.getReqstatus().equals("approved")){
+				return "Already Approved";
+			}
+			else if(vob.getReqstatus().equals("pending")) {
+				String sql="update vendor set reqstatus='approved' where vendorid=?;";
+				int res=jt.update(sql,new Object[] {vendorid});
+				if(res>=1)
+					return "Request Approved Successfully";
+				else
+					return "Error in approve";
+							
+			}
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+	
+	@Override
+	public String rejectVendorById(String vendorid) {
+		// TODO Auto-generated method stub
+		try
+		{
+			String sql="update vendor set reqstatus='rejected' where vendorid=?;";
+			int res=jt.update(sql,new Object[] {vendorid});
+			if(res>=1)
+				return "Request Rejected";
+			else
+				return "Error in reject";
+						
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Vendor searchVendorById(String vendorid) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where vendorid=?;";
+		try
+		{
+			Vendor x=(Vendor) jt.queryForObject(sql, new Object[] {vendorid}, new BeanPropertyRowMapper(Vendor.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Accounts getAccountsObjectById(String vendorid) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from accounts where vendorid=?;";
+		try
+		{
+			Accounts ac=(Accounts) jt.queryForObject(sql, new Object[] {vendorid}, new BeanPropertyRowMapper(Accounts.class));
+			return ac;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String transcatDebitAdmin(String vendorid, int amount) {
+		// TODO Auto-generated method stub
+		String str="update transact set balance=balance-? Where user='admin';";
+		int r=jt.update(str,new Object[] {amount});
+		if(r>=1)
+			return "Amount transferred Succesfully";
+		else
+			return "Error Occured";
+	}
+
+	@Override
+	public String transcatCreditVendor(String vendorid, int amount) {
+		// TODO Auto-generated method stub
+		String str="update transact set balance=balance+? Where user=?;";
+		int r=jt.update(str,new Object[] {amount,vendorid});
+		if(r>=1)
+			return "Amount transferred Succesfully";
+		else
+			return "Error Occured";
+	}
+	@Override
+	public List<Vendor> showAllApprovedVendor() {
+	// TODO Auto-generated method stub
+		String sql = "Select * from vendor where reqstatus='approved';";
+		try {
+		List<Vendor> appven = jt.query(sql, new BeanPropertyRowMapper(Vendor.class));
+		return appven;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		return null; 
+	}
+
+
+
+	@Override
+	public String activateVendorById(String vendorid) {
+		Vendor v=searchVendorById(vendorid);
+		try
+		{
+			String sql="update vendor set activestatus='activated' where vendorid=?;";
+			int res=jt.update(sql,new Object[] {vendorid});
+			if(res>=1)
+			return "Vendor Activated Successfully";
+			else
+			return "Error in activation";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+
+
+	@Override
+	public String deactivateVendorById(String vendorid) {
+	// TODO Auto-generated method stub
+		Vendor v=searchVendorById(vendorid);
+		try
+		{
+	
+			String sql="update vendor set activestatus='deactivated' where vendorid=?;";
+			int res=jt.update(sql,new Object[] {vendorid});
+			if(res>=1)
+			return "Vendor Deactivated Successfully";
+			else
+			return "Error in Deactivation";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+
+
+	@Override
+	public String deleteVendorById(String vendorid) {
+	// TODO Auto-generated method stub
+		try
+		{
+			String sql="update vendor set reqstatus='rejected' where vendorid=?;";
+			int res=jt.update(sql,new Object[] {vendorid});
+			if(res>=1)
+			return "Vendor Deleted";
+			else
+			return "Error";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Reviews> showAllReview() {
+		// TODO Auto-generated method stub
+		String sql = "Select * from reviews;";
+		try {
+			List<Reviews> reviewAll = jt.query(sql, new BeanPropertyRowMapper(Reviews.class));
+			return reviewAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Reviews> showReviewComplaints() {
+		// TODO Auto-generated method stub
+		String sql = "Select * from reviews where complaint is not null;";
+		try {
+			List<Reviews> reviewAll = jt.query(sql, new BeanPropertyRowMapper(Reviews.class));
+			return reviewAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String deleteReview(String vid, String fid, String complaint) {
+		// TODO Auto-generated method stub
+		try
+		{
+			String sql="delete from reviews where vendorid=? and foodieid=? and complaint=?;";
+			int res=jt.update(sql,new Object[] {vid,fid,complaint});
+			if(res>=1)
+				return "Review Deleted Successfully";
+			else
+				return "Error in deletion of review";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+}
+
+
+
+
+============================================================================================
+
+FoodieRepoImpl
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import com.FinalProject.Entity.Foodie;
+import com.FinalProject.Entity.Reviews;
+import com.FinalProject.Entity.Vendor;
+import com.FinalProject.Repo.FoodieRepo;
+
+@Component
+public class FoodieRepoImpl implements FoodieRepo {
+	
+	@Autowired
+	JdbcTemplate jt;
+	
+	private String foodieid;
+
+	@Override
+	public String addReview(Reviews obr) {
+		// TODO Auto-generated method stub
+		String str = "insert into reviews(vendorid,vendorname,location,foodieid,dateofvisit,dateofreview,review,ratings,complaint) values(?,?,?,?,?,?,?,?,?);";
+		try
+		{
+			int r=jt.update(str, new Object[] {obr.getVendorid(),obr.getVendorname(),obr.getLocation(),obr.getFoodieid(),obr.getDateofvisit(),obr.getDateofreview(),obr.getReview(),obr.getRatings(),obr.getComplaint()});
+			if(r>=1)
+			{
+				return "Review added Succesfully";
+			}
+			else
+		       return "Error in review addition";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Vendor> showActivatedVendor() {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where reqstatus='approved' and activestatus='activated';";
+		try {
+		List<Vendor> venderacAll = jt.query(sql, new BeanPropertyRowMapper(Vendor.class));
+		return venderacAll;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		return null;
+	
+	}
+
+	@Override
+	public Vendor getVendorByName(String vendorname) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where vendorname=?;";
+		try
+		{
+			Vendor x=(Vendor) jt.queryForObject(sql, new Object[] {vendorname}, new BeanPropertyRowMapper(Vendor.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	
+	}
+
+	@Override
+	public void setFoodieId(String foodieid) {
+		// TODO Auto-generated method stub
+		this.foodieid=foodieid;
+		
+		
+	}
+
+	@Override
+	public String getFoodieId() {
+		// TODO Auto-generated method stub
+		return foodieid;
+	}
+
+	@Override
+	public Foodie getFoodieById(String foodieid) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from foodie where foodieid=?;";
+		try
+		{
+			Foodie x=(Foodie) jt.queryForObject(sql, new Object[] {foodieid}, new BeanPropertyRowMapper(Foodie.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;	
+	}
+
+	@Override
+	public List<Reviews> viewReview(String foodieid) {
+		// TODO Auto-generated method stub
+		String fid=getFoodieId();
+		String sql = "Select * from reviews where foodieid='"+fid+"' and review is not null;";
+		try {
+			List<Reviews> reviewfAll = jt.query(sql, new BeanPropertyRowMapper(Reviews.class));
+			if(reviewfAll.isEmpty()) {
+				System.out.println("list is empty");
+			}
+			else
+				System.out.println("list is not empty");
+			return reviewfAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String deleteReview(String fid, String vid) {
+		// TODO Auto-generated method stub
+		String str = "delete from reviews where foodieid=? and vendorid=?;";
+		try
+		{
+			int r=jt.update(str, new Object[] {fid,vid});
+			if(r>=1)
+			{
+				return "Review deleted Succesfully";
+			}
+			else
+		       return "Error in review deletion";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String updateReview(String fid, String vid, String review) {
+		// TODO Auto-generated method stub
+		String str = "update reviews set review=? where foodieid=? and vendorid=?;";
+		try
+		{
+			int r=jt.update(str, new Object[] {review,fid,vid});
+			if(r>=1)
+			{
+				return "Review Updated Succesfully";
+			}
+			else
+		       return "Error in review Updation";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Reviews getReviewByIds(String fid, String vid) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from reviews where foodieid=? and vendorid=?;";
+		try
+		{
+			Reviews x=(Reviews) jt.queryForObject(sql, new Object[] {fid,vid}, new BeanPropertyRowMapper(Reviews.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Reviews getReviewByReview(String review) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from reviews where review=?;";
+		try
+		{
+			Reviews x=(Reviews) jt.queryForObject(sql, new Object[] {review}, new BeanPropertyRowMapper(Reviews.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Vendor> getVendorsByName(String name) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where reqstatus='approved' and activestatus='activated' and vendorname=?;";
+		try {
+			List<Vendor> vendernAll = jt.query(sql,new Object[] {name}, new BeanPropertyRowMapper(Vendor.class));
+			return vendernAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Vendor> getVendorByLocation(String location) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where reqstatus='approved' and activestatus='activated' and location=?;";
+		try {
+			List<Vendor> venderlAll = jt.query(sql,new Object[] {location}, new BeanPropertyRowMapper(Vendor.class));
+			return venderlAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<Vendor> getVendorByRating(String rating) {
+		// TODO Auto-generated method stub
+		//String sql = "Select * from vendor where reqstatus='approved' and activestatus='activated' and rating=?;";
+		String sql="select * from vendor where reqstatus='approved' and activestatus='activated' and vendorname in (select vendorname from reviews where ratings=?);";
+		try {
+			List<Vendor> venderrAll = jt.query(sql,new Object[] {rating}, new BeanPropertyRowMapper(Vendor.class));
+			return venderrAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String updateProfile(Foodie f) {
+		// TODO Auto-generated method stub
+		String sql="UPDATE foodie SET firstname=?, lastname=?,password=?,confirmpassword=?,emailid=?,dob=?, gender=?,mobile=?, address=? WHERE foodieid=?;";
+		try
+		{
+			int r=jt.update(sql, new Object[] {f.getFirstname(),f.getLastname(),f.getPassword(),f.getConfirmpassword(),f.getEmailid(),f.getDob(),f.getGender(),f.getMobile(),f.getAddress(),f.getFoodieid()});
+			if(r>=1)
+			{
+				return "Profile Updated Succesfully";
+			}
+			else
+		       return "Error in profile updation";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}	
+		return null;
+	}
+	
+
+}
+
+
+
+
+
+===============================================================================
+
+LoginRepoImpl
+
+
+import java.sql.Blob;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import com.FinalProject.Entity.Accounts;
+import com.FinalProject.Entity.Foodie;
+import com.FinalProject.Entity.UserDetails;
+import com.FinalProject.Entity.Vendor;
+import com.FinalProject.Repo.LoginRepo;
+
+@Component
+public class LoginRepoImpl implements LoginRepo {
+	
+	@Autowired
+	JdbcTemplate jt;
+
+	@Override
+	public boolean validateAdmin(String username, String password) {
+		if(username.equals("Admin")&&password.equals("123"))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public Vendor validateVendor(String vendorid, String password) {
+		String str="select*from vendor where vendorid=? and password=?;";
+		try
+		{
+			Vendor x=(Vendor) jt.queryForObject(str, new Object[] {vendorid,password}, new BeanPropertyRowMapper(Vendor.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Foodie validateFoodie(String foodieid, String password) {
+		String str="select*from foodie where foodieid=? and password=?;";
+		try
+		{
+			Foodie x=(Foodie) jt.queryForObject(str, new Object[] {foodieid,password}, new BeanPropertyRowMapper(Foodie.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public boolean addVendor(Vendor ven) {
+		String str = "insert into vendor(vendorname,email,location,websiteid,vendortype,cusinetype,uploadmenucard,uploadphoto,password) values(?,?,?,?,?,?,?,?,?);";
+		try 
+		{
+			int r = jt.update(str, new Object[] {ven.getVendorname(),ven.getEmail(),ven.getLocation(),ven.getWebsiteid(),ven.getVendortype(),ven.getCusinetype(),ven.getUploadmenucard(),ven.getUploadphoto(),ven.getPassword()});
+			if(r>=1)
+			{
+				return true;
+			}
+		
+		else
+		 	return false;
+		}
+			catch(Exception ex)
+			{
+				System.out.println(ex.getMessage());
+			}
+			
+		return false;
+		}
+
+	@Override
+	public String addFoodie(Foodie fod) {
+		String str = "insert into foodie(firstname,lastname,password,confirmpassword,emailid,dob,gender,mobile,address) values(?,?,?,?,?,?,?,?,?);";
+		try
+		{
+			int r=jt.update(str, new Object[] {fod.getFirstname(),fod.getLastname(),fod.getPassword(),fod.getConfirmpassword(),fod.getEmailid(),fod.getDob(),fod.getGender(),fod.getMobile(),fod.getAddress()});
+			if(r>=1)
+			{
+				return "Foodie Added Successfully";
+			}
+			else
+		       return "failed in Registration";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		
+	return "failed";
+	}
+
+	@Override
+	public boolean makePayment(Accounts acc) {
+		// TODO Auto-generated method stub
+		String str="insert into accounts (vendorid,subscription,paidamount) values(?,?,?);";
+		try
+		{
+			int r=jt.update(str, new Object[] {acc.getVendorid(),acc.getSubscription(),  acc.getPaidamount()});
+			if(r>=1)
+			{
+				return true;
+			}
+			else
+		       return false;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return false;
+		
+	}
+
+	@Override
+	public String transcationAdmin(String vendorid, int amount) {
+		// TODO Auto-generated method stub
+		String str="update transact set balance=balance+? Where user='admin';";
+		int r=jt.update(str,new Object[] {amount});
+		if(r>=1)
+		return "Amount transferred Succesfully";
+		else
+		return "Error Occured";
+	}
+
+	@Override
+	public String transcationVendor(String vendorid, int amount) {
+		// TODO Auto-generated method stub
+		String str="update transact set balance=balance-? Where user=?;";
+		int r=jt.update(str,new Object[] {amount,vendorid});
+		if(r>=1)
+		return "Amount transferred Succesfully";
+		else
+		return "Error Occured";
+	}
+
+	@Override
+	public String getVendorId(String name) {
+		String str="select vendorid from vendor where vendorname=?;";
+		try
+		{
+		Vendor x=(Vendor) jt.queryForObject(str, new Object[] {name}, new BeanPropertyRowMapper(Vendor.class));
+		return x.getVendorid();
+		}
+		catch(Exception ex)
+		{
+		System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public String addToTransact(String user) {
+		// TODO Auto-generated method stub
+		String str="insert into transact (user) values(?);";
+		try
+		{
+		int r=jt.update(str, new Object[] {user});
+		if(r>=1)
+		{
+		return "Added";
+		}
+		else
+		return "Error";
+		}
+		catch(Exception ex)
+		{
+		System.out.println(ex.getMessage());
+		}
+
+		return null;
+	}
+
+	@Override
+	public String addUserDetails(UserDetails ud) {
+		// TODO Auto-generated method stub
+		String str="insert into userdetails (firstname,lastname,email,username,password,sq1,sq2,sq3 ) values(?,?,?,?,?,?,?,?);";
+		try
+		{
+			int r=jt.update(str, new Object[] {ud.getFirstname(),ud.getLastname(),ud.getEmail(),ud.getUsername(),ud.getPassword(),ud.getSq1(),ud.getSq2(),ud.getSq3()});
+			if(r>=1)
+			{
+				return "Added to userdetails";
+			}
+			else
+		       return "fail in addition";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public List<String> getAllEmailsOfVendors() {
+		// TODO Auto-generated method stub
+		String sql = "Select email from vendor;";
+		try {
+		List<String> vmailAll = jt.query(sql, new BeanPropertyRowMapper(String.class));
+		return vmailAll;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		
+		return null;
+	}
+
+	@Override
+	public List<String> getAllEmailsOfFoodies() {
+		// TODO Auto-generated method stub
+		String sql = "Select emailid from foodie;";
+		try {
+		List<String> fmailAll = jt.query(sql, new BeanPropertyRowMapper(String.class));
+		return fmailAll;
+		}
+		catch(Exception ex) {
+		System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	@Override
+	public Blob getVendorPhotoById(int id) {
+
+		String query = "select uploadphoto from vendor where vendorid=?";
+
+		@SuppressWarnings("deprecation")
+		Blob photo = jt.queryForObject(query, new Object[] { id }, Blob.class);
+
+		return photo;
+	}
+	
+	@Override
+	public Blob getMenuPhotoById(int id) {
+
+		String query = "select uploadmenucard from vendor where vendorid=?";
+
+		@SuppressWarnings("deprecation")
+		Blob photo = jt.queryForObject(query, new Object[] { id }, Blob.class);
+
+		return photo;
+	}
+
+	 @Override
+		public Vendor getUernameVendor(String name, String email) {
+			// TODO Auto-generated method stub
+			String str="select*from vendor where vendorname=? and email=?;";
+			try
+			{
+				Vendor x=(Vendor) jt.queryForObject(str, new Object[] {name,email}, new BeanPropertyRowMapper(Vendor.class));
+				return x;
+			}
+			catch(Exception ex)
+			{
+				System.out.println(ex.getMessage());
+			}
+			return null;
+		}
+
+		@Override
+		public Foodie getUernameFoodie(String name, String email) {
+			// TODO Auto-generated method stub
+			String str="select*from foodie where firstname=? and emailid=?;";
+			try
+			{
+				Foodie x=(Foodie) jt.queryForObject(str, new Object[] {name,email}, new BeanPropertyRowMapper(Foodie.class));
+				return x;
+			}
+			catch(Exception ex)
+			{
+				System.out.println(ex.getMessage());
+			}
+			return null;
+		}
+
+	
+	}
+		
+	
+==========================================================================
+
+VendorRepoImpl
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import com.FinalProject.Entity.FoodieReviews;
+import com.FinalProject.Entity.Reviews;
+import com.FinalProject.Entity.Vendor;
+import com.FinalProject.Repo.VendorRepo;
+
+@Component
+public class VendorRepoImpl implements VendorRepo {
+	
+	@Autowired
+	JdbcTemplate jt;
+	
+	private String vendorid;
+
+	public String getVendorid() {
+		return vendorid;
+	}
+
+	public void setVendorid(String vendorid) {
+		this.vendorid = vendorid;
+	}
+	
+	@Override
+	public Vendor getVendorById(String vendorid) {
+		// TODO Auto-generated method stub
+		String sql = "Select * from vendor where vendorid=?;";
+		try
+		{
+			Vendor x=(Vendor) jt.queryForObject(sql, new Object[] {vendorid}, new BeanPropertyRowMapper(Vendor.class));
+			return x;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+	
+	@Override
+	public List<Reviews> viewReview(String vendorid) {
+		// TODO Auto-generated method stub
+		String vid=getVendorid();
+		String sql = "Select * from reviews where vendorid='"+vid+"' and review is not null;";
+		try {
+			List<Reviews> reviewVAll = jt.query(sql, new BeanPropertyRowMapper(Reviews.class));
+			if(reviewVAll.isEmpty()) {
+				System.out.println("list is empty");
+			}
+			else
+				System.out.println("list is not empty");
+			return reviewVAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;	
+	}
+
+	@Override
+	public String updateComplaint( String comp,String review) {
+		// TODO Auto-generated method stub
+		String str = "update reviews set complaint=? where review=?;";
+		try
+		{
+			//int r=jt.update(str,comp,review);
+			int r=jt.update(str,new Object[] {comp,review});
+			if(r>=1)
+			{
+				return "Complaint Submitted Succesfully";
+			}
+			else
+		       return "Error in Complaint Submission";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}finally {
+			
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public String updateVendorProfile(Vendor v) {
+		// TODO Auto-generated method stub
+		String sql="UPDATE vendor SET vendorname=?,password=?,email=?,location=?, websiteid=?,vendortype=?, cusinetype=?,uploadmenucard=?,uploadphoto=? WHERE vendorid=?;";
+		try
+		{
+			int r=jt.update(sql, new Object[] {v.getVendorname(),v.getPassword(),v.getEmail(),v.getLocation(),v.getWebsiteid(),v.getVendortype(),v.getCusinetype(),v.getUploadmenucard(),v.getUploadphoto(),v.getVendorid()});
+			if(r>=1)
+			{
+				return "Profile Updated Succesfully";
+			}
+			else
+		       return "Error in profile updation";
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}	
+		return null;
+	}
+
+	@Override
+	public List<FoodieReviews> getFoodieDetails(String vendorid) {
+		// TODO Auto-generated method stub
+		String vid=getVendorid();
+		String sql = "select f.foodieid,f.firstname,f.mobile,r.dateofvisit,r.dateofreview,r.review,r.ratings from foodie f join reviews r on f.foodieid=r.foodieid where vendorid='"+vid+"' and review is not null;";
+		try {
+			List<FoodieReviews> reviewVAll = jt.query(sql ,new BeanPropertyRowMapper(FoodieReviews.class));
+			if(reviewVAll.isEmpty()) {
+				System.out.println("review list is empty");
+			}
+			else
+				System.out.println("review list is not empty");
+			return reviewVAll;
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return null;
+	}
+
+	
+}
+
+
+
+
+======================================================================
+
+VendorReviewRepoImpl
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import com.FinalProject.Entity.Vendor;
+import com.FinalProject.Entity.VendorRatings;
+import com.FinalProject.Repo.VendorReviewRepo;
+
+@Component
+public class VendorReviewRepoImpl implements VendorReviewRepo {
+	
+	@Autowired
+	JdbcTemplate jt;
+	
+	@Autowired
+	AdminRepoImpl ar;
+
+	@Override
+	public int countNumberOfReview(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(vendorname) from reviews where vendorname=?;";
+		try
+		{
+			
+			int vcount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return vcount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return 0;
+	
+	}
+	
+	@Override
+	public int countRatingOfOne(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(ratings) from reviews where vendorname=? and ratings=1;";
+		try
+		{
+			
+			int twocount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return twocount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		
+		return 0;
+	}
+
+	@Override
+	public int countRatingOfTwo(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(ratings) from reviews where vendorname=? and ratings=2;";
+		try
+		{
+			
+			int twocount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return twocount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return 0;
+	}
+	
+	@Override
+	public int countRatingOfThree(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(ratings) from reviews where vendorname=? and ratings=3;";
+		try
+		{
+			
+			int twocount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return twocount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return 0;
+		
+	}
+
+	@Override
+	public int countRatingOfFour(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(ratings) from reviews where vendorname=? and ratings=4;";
+		try
+		{
+			
+			int fourcount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return fourcount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return 0;
+	}
+	
+	@Override
+	public int countRatingOfFive(String name) {
+		// TODO Auto-generated method stub
+		String sql = "select count(ratings) from reviews where vendorname=? and ratings=5;";
+		try
+		{
+			
+			int twocount=(int) jt.queryForObject(sql, new Object[] {name}, int.class);
+			return twocount;
+		}
+		catch(Exception ex)
+		{
+			System.out.println(ex.getMessage());
+		}
+		return 0;
+		
+	}
+
+	@Override
+	public List<VendorRatings> getRatingList() {
+		// TODO Auto-generated method stub
+		List<VendorRatings> vr=new ArrayList<VendorRatings>();
+		
+		List<Vendor> vlist=ar.showAllApprovedVendor();
+		
+		for(Vendor v:vlist) {
+			String vname=v.getVendorname();
+			int c=countNumberOfReview(vname);
+			int c1=countRatingOfOne(vname);
+			int c2=countRatingOfTwo(vname);
+			int c3=countRatingOfThree(vname);
+			int c4=countRatingOfFour(vname);
+			int c5=countRatingOfFive(vname);
+			
+			VendorRatings ob=new VendorRatings(vname,c,c1,c2,c3,c4,c5);
+			vr.add(ob);
+			
+		}
+		
+		return vr;
+	}
+
+	
+
+	
+
+	
+
+}
+
+
+
